@@ -59,13 +59,7 @@
 
 use md5;
 use sha1::Sha1;
-use sha2::{
-    Sha224,
-    Sha256,
-    Sha384,
-    Sha512,
-    Digest,
-};
+use sha2::{Digest, Sha224, Sha256, Sha384, Sha512};
 use std::{
     env,
     error::Error,
@@ -100,7 +94,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         SHA384_HEX_STRING_LENGTH,
         SHA512_HEX_STRING_LENGTH,
     ]
-        .contains(&hash_length)
+    .contains(&hash_length)
     {
         return Err("Hash length is not valid".into());
     }
@@ -114,11 +108,26 @@ fn main() -> Result<(), Box<dyn Error>> {
 
         let (computed_hash, algorithm) = match hash_length {
             MD5_HEX_STRING_LENGTH => (hex::encode(md5::compute(common_password).0), "MD5"),
-            SHA1_HEX_STRING_LENGTH => (hex::encode(Sha1::digest(common_password.as_bytes())), "SHA-1"),
-            SHA224_HEX_STRING_LENGTH => (hex::encode(Sha224::digest(common_password.as_bytes())), "SHA-224"),
-            SHA256_HEX_STRING_LENGTH => (hex::encode(Sha256::digest(common_password.as_bytes())), "SHA-256"),
-            SHA384_HEX_STRING_LENGTH => (hex::encode(Sha384::digest(common_password.as_bytes())), "SHA-384"),
-            SHA512_HEX_STRING_LENGTH => (hex::encode(Sha512::digest(common_password.as_bytes())), "SHA-512"),
+            SHA1_HEX_STRING_LENGTH => (
+                hex::encode(Sha1::digest(common_password.as_bytes())),
+                "SHA-1",
+            ),
+            SHA224_HEX_STRING_LENGTH => (
+                hex::encode(Sha224::digest(common_password.as_bytes())),
+                "SHA-224",
+            ),
+            SHA256_HEX_STRING_LENGTH => (
+                hex::encode(Sha256::digest(common_password.as_bytes())),
+                "SHA-256",
+            ),
+            SHA384_HEX_STRING_LENGTH => (
+                hex::encode(Sha384::digest(common_password.as_bytes())),
+                "SHA-384",
+            ),
+            SHA512_HEX_STRING_LENGTH => (
+                hex::encode(Sha512::digest(common_password.as_bytes())),
+                "SHA-512",
+            ),
             _ => continue,
         };
 
