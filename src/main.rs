@@ -7,6 +7,7 @@
 //! - Supports MD5, SHA-1, SHA-224, SHA-256, SHA-384, and SHA-512 hashing algorithms.
 //! - Matches hashed passwords against a wordlist to find the original password.
 //! - Displays the type of hashing algorithm used when a password is found.
+//! - Multi threaded (Maybe not effectively)
 //!
 //! ## Usage
 //!
@@ -58,6 +59,7 @@
 //! ```
 
 use md5;
+use rayon::prelude::*;
 use sha1::Sha1;
 use sha2::{Digest, Sha224, Sha256, Sha384, Sha512};
 use std::{
@@ -102,9 +104,10 @@ fn main() -> Result<(), Box<dyn Error>> {
     let wordlist_file = File::open(&args[1])?;
     let reader = BufReader::new(&wordlist_file);
 
-    for line in reader.lines() {
-        let line = line?;
-        let common_password = line.trim();
+    let passwords: Vec<String> = reader.lines().filter_map(Result::ok).collect();
+
+    let found = passwords.par_iter().find_map_any(|password| {
+        let common_password = password.trim();
 
         let (computed_hash, algorithm) = match hash_length {
             MD5_HEX_STRING_LENGTH => (hex::encode(md5::compute(common_password).0), "MD5"),
@@ -128,16 +131,21 @@ fn main() -> Result<(), Box<dyn Error>> {
                 hex::encode(Sha512::digest(common_password.as_bytes())),
                 "SHA-512",
             ),
-            _ => continue,
+            _ => return None,
         };
 
         if hash_to_crack == computed_hash {
             println!("Password found: {}", common_password);
             println!("Hashing algorithm used: {}", algorithm);
-            return Ok(());
+            Some(())
+        } else {
+            None
         }
+    });
+
+    if found.is_none() {
+        println!("Password not found in wordlist :(");
     }
 
-    println!("Password not found in wordlist :(");
     Ok(())
 }
